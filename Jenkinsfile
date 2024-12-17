@@ -86,8 +86,8 @@ pipeline {
 
         stage('Build and Push Container Image') {
             agent { label 'jenkins-agent-podman' }
-            withCredentials([usernamePassword(credentialsId: 'quay-registry', passwordVariable: 'PASSWORD', usernameVariable: 'USER')]) {
                 steps {
+                    withCredentials([usernamePassword(credentialsId: 'quay-registry', passwordVariable: 'PASSWORD', usernameVariable: 'USER')]) {
                     def buildNumber = "${env.BUILD_NUMBER}"
                     def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
                     tag= "${baseVersion}-${buildNumber}"
@@ -137,7 +137,6 @@ pipeline {
             steps{
                 cleanWs
             }
-
         }
 
     }
