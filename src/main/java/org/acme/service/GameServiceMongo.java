@@ -27,7 +27,11 @@ public class GameServiceMongo implements GameService {
     public GameDto getOneById(Integer id) {
         checkIfInputNotMissing(id);
         Game game = gameRepository.findById(id);
+        if (Objects.isNull(game) ) {
+            throwNotFoundException(id, "Game not found");
+        }
         return ModelDtoMapper.toDto(game);
+
     }
 
 
@@ -35,6 +39,9 @@ public class GameServiceMongo implements GameService {
     public GameDto getOneByName(String name) {
         checkIfInputNotMissing(name);
         Game game = gameRepository.findByShortTitle(name);
+        if (Objects.isNull(game) ) {
+            throw new NotFoundException("Game not found by shortTitle: " + name);
+        }
         return ModelDtoMapper.toDto(game);
     }
 
@@ -90,7 +97,7 @@ public class GameServiceMongo implements GameService {
     }
 
     private static void throwNotFoundException(Integer id, String operationSuffixMessage) {
-        throw new NotFoundException("Can't find gameId in DB - " + id + operationSuffixMessage);
+        throw new NotFoundException("Can't find gameId=" + id + " in DB , " + operationSuffixMessage);
     }
 
     private static void checkIfInputNotMissing(Integer id) {

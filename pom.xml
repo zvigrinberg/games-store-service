@@ -161,5 +161,16 @@
                 <quarkus.native.enabled>true</quarkus.native.enabled>
             </properties>
         </profile>
+        <profile>
+            <id>its</id>
+            <activation>
+                <property>
+                    <name>its</name>
+                </property>
+            </activation>
+            <properties>
+                <skipITs>false</skipITs>
+            </properties>
+        </profile>
     </profiles>
 </project>

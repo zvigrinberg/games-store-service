@@ -7,6 +7,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.acme.dto.GameDto;
 import org.acme.service.GameService;
+import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestQuery;
 
 import java.util.List;
@@ -44,8 +45,9 @@ public class GameResource {
         return gameService.create(gameDto);
 
     }
-    @DELETE()
+    @DELETE
     @Path("{id}")
+    @ResponseStatus(200)
     public String deleteGame(Integer id) {
         gameService.delete(id);
         return "Successfully Deleted game with id= " + id;

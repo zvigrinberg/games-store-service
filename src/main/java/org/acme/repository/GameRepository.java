@@ -6,6 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.ApplicationPath;
 import org.acme.model.Game;
 
+import java.util.Objects;
+
 @ApplicationScoped
 public class GameRepository implements PanacheMongoRepositoryBase<Game,Integer> {
 
@@ -14,9 +16,12 @@ public class GameRepository implements PanacheMongoRepositoryBase<Game,Integer> 
     }
 
     public Game findById(Integer id) {
-        return find("id", id).firstResult();
+        Game theGame = find("id", id).firstResult();
+        if (Objects.isNull(theGame)) {
+            theGame = findByIdOptional(id).orElse(null);
+        }
 
-
+        return theGame;
     }
 
     public boolean deleteGameById(Integer id) {
