@@ -15,6 +15,7 @@ pipeline {
     environment {
         JAVA_HOME = tool name: 'java-jdk'
         M2_HOME = tool name: 'apache-maven'
+        TESTCONTAINERS_RYUK_DISABLED=true
     }
     stages {
         stage('Checkout Repository') {
@@ -159,7 +160,8 @@ pipeline {
 }
 
 private GString forwardDockerDaemonToPodmanSocket() {
-    def podmanSocket = sh(script:  "podman info --format '{{ .Host.RemoteSocket.Path }}'", returnStdout: true).trim()
+//    systemctl --user enable podman.socket  --now
+    def podmanSocket = sh(script:  "podman info --format '{{ .Host.RemoteSocket.Path }}' || true", returnStdout: true).trim()
     return "unix://${podmanSocket}"
 }
 
