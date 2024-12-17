@@ -88,12 +88,11 @@ pipeline {
             agent { label 'jenkins-agent-podman' }
                 steps {
                     withCredentials([usernamePassword(credentialsId: 'quay-registry', passwordVariable: 'PASSWORD', usernameVariable: 'USER')]) {
-                    def buildNumber = "${env.BUILD_NUMBER}"
-                    def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
-                    tag= "${baseVersion}-${buildNumber}"
-                    toBuildFullImage = "${registryServer}/${registryAccount}/${applicationName}:${tag}"
                     script {
-
+                        def buildNumber = "${env.BUILD_NUMBER}"
+                        def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                        tag= "${baseVersion}-${buildNumber}"
+                        toBuildFullImage = "${registryServer}/${registryAccount}/${applicationName}:${tag}"
                         sh "podman login -u ${USER} -p ${PASSWORD} ${registryServer}"
                         sh "podman build -f src/main/docker/Dockerfile.legacy-jar -t ${toBuildFullImage} ."
                         sh "podman push ${toBuildFullImage}"
@@ -131,7 +130,6 @@ pipeline {
               }
 
         }
-
 
         stage('Clean Workspace') {
             steps{
