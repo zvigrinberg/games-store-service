@@ -10,7 +10,7 @@ pipeline {
     agent any
     tools {
         maven 'apache-maven'
-        java  'java-jdk'
+        jdk  'java-jdk'
     }
     stages {
         stage('Checkout Repository') {
@@ -105,44 +105,40 @@ pipeline {
         }
 
         stage('Create Release commit and Tag'){
-          withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
-              steps{
+              steps {
                   checkout scmGit(branches: [[name: 'main']], extensions: [], userRemoteConfigs: [[url: gitRepo]])
-                  script{
+                  script {
+                      withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
+                          def authenticatedRemote = gitRepo.replace("https://", "https://${GH_TOKEN}@")
+                          sh 'git config user.name jenkins-game-store-service-ci-user'
+                          sh 'git config user.email jenkins-game-store-service-ci-user@users.noreply.github.com'
+                          sh "git remote set-url origin ${authenticatedRemote}"
+                          def deploymentYaml = readYaml file: 'deploy/deployment.yaml'
+                          // Update image name to the new built image name
+                          deploymentYaml.spec.template.spec.containers[0].image = "${toBuildFullImage}"
+                          writeYaml charset: '', data: deploymentYaml, file: 'deploy/deployment.yaml'
+                          def commitMessage = "build: prepare release ${tag}"
+                          sh 'git add deploy/deployment.yaml'
+                          sh "git commit -m ${commitMessage}"
+                          sh 'git push'
+                          // create tag
+                          sh "git tag -a ${tag}"
+                          // push tag to remote repository
+                          sh "git push origin ${tag}"
 
-                      def authenticatedRemote = gitRepo.replace("https://","https://${GH_TOKEN}@")
-                      sh 'git config user.name jenkins-game-store-service-ci-user'
-                      sh 'git config user.email jenkins-game-store-service-ci-user@users.noreply.github.com'
-                      sh "git remote set-url origin ${authenticatedRemote}"
-                      def deploymentYaml = readYaml file: 'deploy/deployment.yaml'
-        // Update image name to the new built image name
-                      deploymentYaml.spec.template.spec.containers[0].image= "${toBuildFullImage}"
-                      writeYaml charset: '', data: deploymentYaml, file: 'deploy/deployment.yaml'
-                      def commitMessage = "build: prepare release ${tag}"
-                      sh 'git add deploy/deployment.yaml'
-                      sh "git commit -m ${commitMessage}"
-                      sh 'git push'
-                      // create tag
-                      sh "git tag -a ${tag}"
-                      // push tag to remote repository
-                      sh "git push origin ${tag}"
-
+                      }
                   }
               }
-          }
+
         }
 
 
         stage('Clean Workspace') {
             steps{
-                cleanWS
+                cleanWs
             }
 
         }
-
-
-
-
 
     }
 }
