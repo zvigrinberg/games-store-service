@@ -16,6 +16,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestQuery;
 
@@ -26,7 +27,7 @@ public class GameResource {
 
     @Inject
     private GameService gameService;
-
+    private static final Logger LOG = Logger.getLogger(GameService.class);
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -38,10 +39,9 @@ public class GameResource {
     @APIResponse(responseCode = "400", description = "Game unique id input is missing", content = {
             @Content(mediaType ="text/plain", schema= @Schema(type = SchemaType.STRING))})
     public GameDto getOneById(@Parameter(description = "Unique game id number", allowEmptyValue = false, required = true, example= "5", schema = @Schema(
-            type = SchemaType.INTEGER
-    ))
+            type = SchemaType.INTEGER))
                                Integer id) {
-
+        LOG.info("Handling a new request get request with id " + id);
         return gameService.getOneById(id);
     }
 
@@ -57,6 +57,7 @@ public class GameResource {
     public GameDto getOneByName(@RestQuery("name")
                                 @Parameter(description = "Short name of the game without spaces", allowEmptyValue = false, required = true,example= "call-of-duty")
                                 String name) {
+        LOG.info("Handling a new request get request with short name= " +  name);
         return gameService.getOneByName(name);
     }
 
@@ -67,6 +68,7 @@ public class GameResource {
     @APIResponse(responseCode = "200", description = "Get All games from database as list , if DB is empty, returns an empty list", content = {
             @Content(mediaType = "application/json", schema= @Schema(type = SchemaType.ARRAY))})
     public List<GameDto> getAllGames() {
+        LOG.info("Handling a new request get all games from Service");
         return gameService.getAll();
     }
 
@@ -77,6 +79,8 @@ public class GameResource {
     @APIResponse(responseCode = "200", description = "Create a single game based on request body ,and persist it to DB, returns An object with auto generated game id unique key.", content = {
             @Content(mediaType = "application/json", schema= @Schema(type = SchemaType.OBJECT))})
     public GameDto createOne(@Valid GameDto gameDto) {
+        LOG.info("Got a request to create new game");
+        LOG.debugf("Creating a new game : %s", gameDto);
         return gameService.create(gameDto);
 
     }
@@ -92,6 +96,7 @@ public class GameResource {
             @Content(mediaType ="text/plain", schema= @Schema(type = SchemaType.STRING))})
     public String deleteGame(@Parameter(description = "Unique game id number", allowEmptyValue = false, required = true,example= "5",schema = @Schema(implementation = String.class))
                              Integer id) {
+        LOG.infof("Handling a new request to delete game with id %s", id);
         gameService.delete(id);
         return "Successfully Deleted game with id= " + id;
     }
@@ -105,6 +110,7 @@ public class GameResource {
             @Content(mediaType ="text/plain", schema= @Schema(type = SchemaType.STRING))})
     @PUT
     public String updateGame(@Valid GameDto game) {
+        LOG.infof("Handling a new request to update a game with id %s", game.getGameId());
         gameService.update(game);
         return "Successfully updated game with id= " + game.getGameId();
     }
