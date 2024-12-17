@@ -3,8 +3,9 @@ def final registryServer = "quay.io"
 def final registryAccount = "zgrinber"
 def final applicationName = "games-store-service"
 def gitRepo = 'https://github.com/zvigrinberg/games-store-service.git'
-def tag
 def final mainBranch = "main"
+def tag
+def toBuildFullImage
 pipeline {
     agent any
     tools {
@@ -69,7 +70,9 @@ pipeline {
 
         stage('Wait for Code Review') {
             steps {
-                input message: 'Proceed to CD? ( Continuous Delivery) ', ok: 'Yes!', submitter: 'zgrinber'
+                timeout(time: 4, unit: 'HOURS') {
+                    input message: 'Proceed to CD? ( Continuous Delivery) ', ok: 'Yes!', submitter: 'zgrinber'
+                }
             }
         }
 
@@ -88,11 +91,12 @@ pipeline {
                     def buildNumber = "${env.BUILD_NUMBER}"
                     def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
                     tag= "${baseVersion}-${buildNumber}"
+                    toBuildFullImage = "${registryServer}/${registryAccount}/${applicationName}:${tag}"
                     script {
 
                         sh "podman login -u ${USER} -p ${PASSWORD} ${registryServer}"
-                        sh "podman build -f src/main/docker/Dockerfile.legacy-jar -t ${registryServer}/${registryAccount}/${applicationName}:${tag} ."
-                        sh "podman push ${registryServer}/${registryAccount}/${applicationName}:${tag}"
+                        sh "podman build -f src/main/docker/Dockerfile.legacy-jar -t ${toBuildFullImage} ."
+                        sh "podman push ${toBuildFullImage}"
 
                     }
                 }
@@ -100,7 +104,7 @@ pipeline {
             }
         }
 
-        stage('Create Release commit and Push Tag'){
+        stage('Create Release commit and Tag'){
           withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
               steps{
                   checkout scmGit(branches: [[name: 'main']], extensions: [], userRemoteConfigs: [[url: gitRepo]])
@@ -110,6 +114,19 @@ pipeline {
                       sh 'git config user.name jenkins-game-store-service-ci-user'
                       sh 'git config user.email jenkins-game-store-service-ci-user@users.noreply.github.com'
                       sh "git remote set-url origin ${authenticatedRemote}"
+                      def deploymentYaml = readYaml file: 'deploy/deployment.yaml'
+        // Update image name to the new built image name
+                      deploymentYaml.spec.template.spec.containers[0].image= "${toBuildFullImage}"
+                      writeYaml charset: '', data: deploymentYaml, file: 'deploy/deployment.yaml'
+                      def commitMessage = "build: prepare release ${tag}"
+                      sh 'git add deploy/deployment.yaml'
+                      sh "git commit -m ${commitMessage}"
+                      sh 'git push'
+                      // create tag
+                      sh "git tag -a ${tag}"
+                      // push tag to remote repository
+                      sh "git push origin ${tag}"
+
                   }
               }
           }
