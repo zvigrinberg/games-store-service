@@ -11,7 +11,7 @@ pipeline {
     tools {
         maven 'apache-maven'
         jdk  'java-jdk'
-        docker 'docker-cli'
+        dockerTool 'docker-cli'
     }
     environment {
         JAVA_HOME = tool name: 'java-jdk'
