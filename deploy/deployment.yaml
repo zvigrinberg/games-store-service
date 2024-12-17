@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: games-store-service
+  name: games-store-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: games-store-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: games-store-service
+    spec:
+      containers:
+      - image: quay.io/zgrinber/games-store-service:1
+        name: games-store-service
+        ports:
+          - containerPort: 8080
+            name: http
+        env:
+          - name: QUARKUS_SWAGGER_UI_ALWAYS_INCLUDE
+            value: "true"
+
