@@ -14,6 +14,9 @@
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.17.3</quarkus.platform.version>
         <skipITs>true</skipITs>
+        <skipTests>false</skipTests>
+        <skipUTs>${skipTests}</skipUTs>
+        <skipITs>${skipTests}</skipITs>
         <surefire-plugin.version>3.5.0</surefire-plugin.version>
     </properties>
 
@@ -129,6 +132,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
+                    <skipTests>${skipUTs}</skipTests>
                 </configuration>
             </plugin>
             <plugin>
@@ -143,6 +147,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <skipTests></skipTests>
                     <systemPropertyVariables>
                         <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -174,7 +179,7 @@
                 </property>
             </activation>
             <properties>
-                <skipITs>false</skipITs>
+                <skipITs>${skipITs}</skipITs>
             </properties>
         </profile>
     </profiles>

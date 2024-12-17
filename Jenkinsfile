@@ -12,6 +12,10 @@ pipeline {
         maven 'apache-maven'
         jdk  'java-jdk'
     }
+    environment {
+        JAVA_HOME = tool name: 'java-jdk'
+        M2_HOME = tool name: 'apache-maven'
+    }
     stages {
         stage('Checkout Repository') {
 
@@ -20,8 +24,16 @@ pipeline {
             }
         }
         stage('Run Unit-tests') {
+          agent { label 'jenkins-agent-podman' }
           steps {
-              sh 'mvn clean test'
+                script{
+                    def podmanSocket = forwardDockerDaemonToPodmanSocket()
+                    withEnv(DOCKER_HOST=${podmanSocket}){
+                        sh "mvn clean test"
+                    }
+                }
+
+
           }
         }
         stage('Jacoco - Generate Coverage Report') {
@@ -42,12 +54,18 @@ pipeline {
             }
         }
         stage('Run Integration Tests') {
-            steps{
-                sh 'mvn clean verify -Pits'
+            agent { label 'jenkins-agent-podman' }
+
+            steps {
+                script {
+                    def podmanSocket = forwardDockerDaemonToPodmanSocket()
+                    withEnv(DOCKER_HOST = $ { podmanSocket }) {
+                        sh 'mvn clean verify -Pits'
+                    }
+                }
+
             }
-
         }
-
         stage('Open Pull Request') {
             steps{
                 withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
@@ -78,7 +96,7 @@ pipeline {
 
         stage('Build JAR Artifact') {
             steps{
-                sh 'mvn package -Dquarkus.package.jar.type=uber-jar'
+                sh 'mvn package -DskipTests=true -Dquarkus.package.jar.type=uber-jar'
                 stash includes: 'target/**', name: 'builtJar'
 
             }
@@ -86,19 +104,19 @@ pipeline {
 
         stage('Build and Push Container Image') {
             agent { label 'jenkins-agent-podman' }
-                steps {
-                    withCredentials([usernamePassword(credentialsId: 'quay-registry', passwordVariable: 'PASSWORD', usernameVariable: 'USER')]) {
-                    script {
-                        def buildNumber = "${env.BUILD_NUMBER}"
-                        def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
-                        tag= "${baseVersion}-${buildNumber}"
-                        toBuildFullImage = "${registryServer}/${registryAccount}/${applicationName}:${tag}"
-                        sh "podman login -u ${USER} -p ${PASSWORD} ${registryServer}"
-                        sh "podman build -f src/main/docker/Dockerfile.legacy-jar -t ${toBuildFullImage} ."
-                        sh "podman push ${toBuildFullImage}"
+            steps {
+               withCredentials([usernamePassword(credentialsId: 'quay-registry', passwordVariable: 'PASSWORD', usernameVariable: 'USER')]) {
+                  script {
+                    def buildNumber = "${env.BUILD_NUMBER}"
+                    def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                    tag= "${baseVersion}-${buildNumber}"
+                    toBuildFullImage = "${registryServer}/${registryAccount}/${applicationName}:${tag}"
+                    sh "podman login -u ${USER} -p ${PASSWORD} ${registryServer}"
+                    sh "podman build -f src/main/docker/Dockerfile.legacy-jar -t ${toBuildFullImage} ."
+                    sh "podman push ${toBuildFullImage}"
 
                     }
-                }
+               }
 
             }
         }
@@ -138,6 +156,11 @@ pipeline {
         }
 
     }
+}
+
+private GString forwardDockerDaemonToPodmanSocket() {
+    def podmanSocket = sh(script:  "podman info --format '{{ .Host.RemoteSocket.Path }}'", returnStdout: true).trim()
+    return "unix://${podmanSocket}"
 }
 
 private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir) {
