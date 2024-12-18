@@ -38,13 +38,7 @@ pipeline {
                 }
           }
         }
-        stage('Jacoco - Generate Coverage Report') {
-            steps{
-                recordCoverage(tools: [[parser: 'JACOCO']],
-                        id: 'jacoco', name: 'JaCoCo Coverage',
-                        sourceCodeRetention: 'EVERY_BUILD')
-            }
-        }
+
         stage('RHDA - Security Scanner Analysis ') {
             steps {
                 script {
@@ -70,7 +64,7 @@ pipeline {
                             def maven = tool 'apache-maven'
                             def mavenBinary = "$maven/bin/mvn"
                             sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
-                            sh 'sleep 30'
+                            sh 'sleep 15'
                             sh "${mavenBinary} clean verify -DskipTests=true -Pits"
                             sh 'podman rm -f mongo'
                         } catch (e) {
@@ -78,7 +72,13 @@ pipeline {
                         }
                     }
                 }
-
+            }
+        }
+        stage('Jacoco - Generate Coverage Report') {
+            steps{
+                recordCoverage(tools: [[parser: 'JACOCO']],
+                        id: 'jacoco', name: 'JaCoCo Coverage',
+                        sourceCodeRetention: 'EVERY_BUILD')
             }
         }
         stage('Open Pull Request') {
