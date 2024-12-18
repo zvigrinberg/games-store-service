@@ -174,7 +174,7 @@ pipeline {
                           sh "git commit -m \"${commitMessage}\""
                           sh 'git push origin HEAD:main'
                           // create tag
-                          sh "git tag -a ${tag}"
+                          sh "git tag -a ${tag} -m \"This ready for release tag was deployed by jenkins, see build url -  ${JENKINS_URL}job/${JOB_NAME}/${BUILD_NUMBER}  \""
                           // push tag to remote repository
                           sh "git push origin ${tag}"
 
