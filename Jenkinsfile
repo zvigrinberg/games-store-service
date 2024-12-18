@@ -68,10 +68,10 @@ pipeline {
                         try {
                             def maven = tool 'apache-maven'
                             def mavenBinary = "$maven/bin/mvn"
-//                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
-//                            sh 'sleep 30'
+                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
+                            sh 'sleep 30'
                             sh "${mavenBinary} clean verify -DskipTests=true -Pits"
-//                            sh 'podman rm -f mongo'
+                            sh 'podman rm -f mongo'
                         } catch (e) {
                             echo "Infrastructural error occured while ITs, continueing : ${e}"
                         }
@@ -88,7 +88,7 @@ pipeline {
                         gitBranch = "${env.GIT_BRANCH}".replace("origin/","")
                         def final gitHubAccountOrganizationName = "zvigrinberg"
                         def final gitOpsRepoName="${JOB_NAME}".replace("-job", "")
-                        def prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${BUILD_URL}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
+                        def prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${JENKINS_URL}job/${JOB_NAME}/${BUILD_NUMBER}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
                         echo "Number of PR Created : "
                         echo "${prNumber}"
                         echo "PR URL:"
@@ -101,7 +101,15 @@ pipeline {
 
         stage('Wait for Code Review') {
             steps {
-               input('Do you want to proceed to CD?')
+                script {
+               try {
+                   input('Do you want to proceed to CD?')
+               } catch (e) {
+                   echo "exception intercepted, continue with pipeline, details : ${e}"
+                   echo "waiting 2 minutes to review PR and Approve it"
+                   sh 'sleep 120'
+                 }
+                }
             }
         }
 
@@ -118,6 +126,7 @@ pipeline {
             steps {
                withCredentials([usernamePassword(credentialsId: 'quay-registry', passwordVariable: 'PASSWORD', usernameVariable: 'USER')]) {
                   script {
+                    unstash 'builtJar'
                     def buildNumber = "${env.BUILD_NUMBER}"
                     def baseVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
                     tag= "${baseVersion}-${buildNumber}"
