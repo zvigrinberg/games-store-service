@@ -15,7 +15,7 @@
         <quarkus.platform.version>3.17.3</quarkus.platform.version>
         <skipTests>false</skipTests>
         <skipUTs>${skipTests}</skipUTs>
-        <skipITs>${skipTests}</skipITs>
+        <skipIT>${skipTests}</skipIT>
         <surefire-plugin.version>3.5.0</surefire-plugin.version>
     </properties>
 
@@ -178,7 +178,7 @@
                 </property>
             </activation>
             <properties>
-                <skipITs>${skipITs}</skipITs>
+                <skipITs>${skipIT}</skipITs>
             </properties>
         </profile>
     </profiles>
