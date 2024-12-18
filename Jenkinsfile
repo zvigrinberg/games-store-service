@@ -101,7 +101,7 @@ pipeline {
 
         stage('Wait for Code Review') {
             steps {
-               input id: 'code-review-gate', message: 'Proceed to CD?', ok: 'Yes!'
+               input('Do you want to proceed to CD?')
             }
         }
 
