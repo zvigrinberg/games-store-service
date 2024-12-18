@@ -60,11 +60,11 @@ pipeline {
 
             steps {
                 script {
-                    withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
+                    withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=true']){
                         def maven = tool 'apache-maven'
                         def mavenBinary = "$maven/bin/mvn"
                         sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
-                        sh 'sleep 10'
+                        sh 'sleep 20'
                         sh "${mavenBinary} clean verify -Pits"
                         sh 'podman rm -f mongo'
                     }
