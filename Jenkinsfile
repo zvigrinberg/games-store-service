@@ -171,7 +171,7 @@ pipeline {
                           writeYaml charset: '', data: deploymentYaml, file: 'deploy/deployment.yaml'
                           def commitMessage = "build: prepare release ${tag}"
                           sh 'git add deploy/deployment.yaml'
-                          sh "git commit -m ${commitMessage}"
+                          sh "git commit -m \"${commitMessage}\""
                           sh 'git push'
                           // create tag
                           sh "git tag -a ${tag}"
