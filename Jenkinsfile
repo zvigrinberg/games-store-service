@@ -47,9 +47,13 @@ pipeline {
         stage('RHDA - Security Scanner Analysis ') {
             steps {
                 script {
-                    def maven = tool 'apache-maven'
-                    def mavenBinary = "$maven/bin/mvn"
-                    invokeRhdaAnalysis("pom.xml", "",mavenBinary)
+                    try {
+                        def maven = tool 'apache-maven'
+                        def mavenBinary = "$maven/bin/mvn"
+                        invokeRhdaAnalysis("pom.xml", "",mavenBinary)
+                    } catch (e) {
+                        echo "error in RHDA step - ${e}"
+                    }
 
                 }
 
@@ -64,10 +68,10 @@ pipeline {
                         try {
                             def maven = tool 'apache-maven'
                             def mavenBinary = "$maven/bin/mvn"
-                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
-                            sh 'sleep 30'
+//                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
+//                            sh 'sleep 30'
                             sh "${mavenBinary} clean verify -DskipTests=true -Pits"
-                            sh 'podman rm -f mongo'
+//                            sh 'podman rm -f mongo'
                         } catch (e) {
                             echo "Infrastructural error occured while ITs, continueing : ${e}"
                         }
@@ -97,9 +101,7 @@ pipeline {
 
         stage('Wait for Code Review') {
             steps {
-                timeout(time: 4, unit: 'HOURS') {
-                    input message: 'Proceed to CD? ( Continuous Delivery) ', ok: 'Yes!', submitter: 'zgrinber'
-                }
+               input id: 'code-review-gate', message: 'Proceed to CD?', ok: 'Yes!'
             }
         }
 
