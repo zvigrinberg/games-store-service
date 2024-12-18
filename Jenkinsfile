@@ -61,11 +61,9 @@ pipeline {
                 script {
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
                         try {
-                            def maven = tool 'apache-maven'
-                            def mavenBinary = "$maven/bin/mvn"
                             sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
                             sh 'sleep 15'
-                            sh "${mavenBinary} clean verify -Pits"
+                            sh "./mvnw clean verify -Pits"
                             sh 'podman rm -f mongo'
                         } catch (e) {
                             echo "Infrastructural error occured while ITs, continueing : ${e}"
@@ -129,7 +127,7 @@ pipeline {
 
         stage('Build JAR Artifact') {
             steps{
-                sh 'mvn package -DskipTests=true -Dquarkus.package.jar.type=uber-jar'
+                sh './mvnw package -DskipTests=true -Dquarkus.package.jar.type=uber-jar'
                 stash includes: 'target/**', name: 'builtJar'
 
             }
