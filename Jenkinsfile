@@ -81,14 +81,14 @@ pipeline {
                 withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
                     script {
 
-                        gitBranch = ${BRANCH_NAME}
+                        gitBranch = "${env.GIT_BRANCH}".replace("origin/","")
                         def final gitHubAccountOrganizationName = "zvigrinberg"
                         def final gitOpsRepoName="${JOB_NAME}".replace("-job", "")
                         def prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${BUILD_URL}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
                         echo "Number of PR Created : "
                         echo "${prNumber}"
                         echo "PR URL:"
-                        echo "${gitRepo.replace(".git","/pulls/${prNumber}")}"
+                        echo "${gitRepo.replace(".git","/pull/${prNumber}".trim())}"
                     }
                 }
             }
@@ -167,11 +167,6 @@ pipeline {
     }
 }
 
-private GString forwardDockerDaemonToPodmanSocket() {
-//    systemctl --user enable podman.socket  --now
-    def podmanSocket = sh(script:  "podman info --format '{{ .Host.RemoteSocket.Path }}' || true", returnStdout: true).trim()
-    return "unix://${podmanSocket}"
-}
 
 private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir,String mavenBinary) {
     final VULNERABLE_RETURN_CODE = "2"
