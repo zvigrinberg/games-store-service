@@ -16,12 +16,11 @@ spec:
         app: games-store-service
     spec:
       containers:
-      - image: quay.io/zgrinber/games-store-service:1
+      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-97
         name: games-store-service
         ports:
-          - containerPort: 8080
-            name: http
+        - containerPort: 8080
+          name: http
         env:
-          - name: QUARKUS_SWAGGER_UI_ALWAYS_INCLUDE
-            value: "true"
-
+        - name: QUARKUS_SWAGGER_UI_ALWAYS_INCLUDE
+          value: 'true'
