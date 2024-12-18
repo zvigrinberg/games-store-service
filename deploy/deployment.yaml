@@ -16,7 +16,7 @@ spec:
         app: games-store-service
     spec:
       containers:
-      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-106
+      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-108
         name: games-store-service
         ports:
         - containerPort: 8080
