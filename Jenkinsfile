@@ -47,8 +47,9 @@ pipeline {
             steps {
                 script {
                     def maven = tool 'apache-maven'
-                    env.EXHORT_MVN_PATH = "$maven/bin/mvn"
-                    invokeRhdaAnalysis("pom.xml", "")
+                    def mavenBinary = "$maven/bin/mvn"
+                    invokeRhdaAnalysis("pom.xml", "",mavenBinary)
+
                 }
 
             }
@@ -58,7 +59,7 @@ pipeline {
 
             steps {
                 script {
-                    withEnv('QUARKUS_MONGODB_DEVSERVICES_ENABLED=false'){
+                    withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
                         sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
                         sh 'mvn clean verify -Pits'
                         sh 'podman rm -f mongo'
@@ -165,7 +166,7 @@ private GString forwardDockerDaemonToPodmanSocket() {
     return "unix://${podmanSocket}"
 }
 
-private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir) {
+private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir,String mavenBinary) {
     final VULNERABLE_RETURN_CODE = "2"
     final GENERAL_ERROR_RETURN_CODE = "1"
     def theFile
@@ -178,7 +179,7 @@ private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir) {
     }
     try {
         def result
-        withEnv(['EXHORT_DEBUG=true']) {
+        withEnv(['EXHORT_DEBUG=true', "EXHORT_MVN_PATH=${mavenBinary}"]) {
             result = rhdaAnalysis consentTelemetry: true, file: theFile
         }
         if (result.trim().equals(VULNERABLE_RETURN_CODE)) {
