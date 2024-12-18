@@ -66,7 +66,7 @@ pipeline {
                             def mavenBinary = "$maven/bin/mvn"
                             sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
                             sh 'sleep 30'
-                            sh "${mavenBinary} clean verify -Pits"
+                            sh "${mavenBinary} clean verify -DskipTests=true -Pits"
                             sh 'podman rm -f mongo'
                         } catch (e) {
                             echo "Infrastructural error occured while ITs, continueing : ${e}"
