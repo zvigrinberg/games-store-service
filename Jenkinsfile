@@ -31,7 +31,7 @@ pipeline {
           steps {
                 script{
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
-                        sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:7.0'
+                        sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
                         sh 'mvn clean test'
                         sh 'podman rm -f mongo'
                     }
@@ -63,7 +63,7 @@ pipeline {
                         try {
                             def maven = tool 'apache-maven'
                             def mavenBinary = "$maven/bin/mvn"
-                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:7.0'
+                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
                             sh 'sleep 15'
                             sh "${mavenBinary} clean verify -Pits"
                             sh 'podman rm -f mongo'
