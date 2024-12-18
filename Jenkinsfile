@@ -172,7 +172,7 @@ pipeline {
                           def commitMessage = "build: prepare release ${tag}"
                           sh 'git add deploy/deployment.yaml'
                           sh "git commit -m \"${commitMessage}\""
-                          sh 'git push'
+                          sh 'git push origin HEAD:main'
                           // create tag
                           sh "git tag -a ${tag}"
                           // push tag to remote repository
