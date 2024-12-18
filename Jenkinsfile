@@ -81,8 +81,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
                     script {
 
-//                        def final gitBranch = ${BRANCH_NAME}
-                        gitBranch = env.BRANCH_NAME
+                        gitBranch = ${BRANCH_NAME}
                         def final gitHubAccountOrganizationName = "zvigrinberg"
                         def final gitOpsRepoName="${JOB_NAME}".replace("-job", "")
                         def prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${BUILD_URL}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
