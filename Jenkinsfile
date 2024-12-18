@@ -30,12 +30,10 @@ pipeline {
                 script{
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
                         sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
-                        sh "mvn clean test"
+                        sh 'mvn clean test'
                         sh 'podman rm -f mongo'
                     }
                 }
-
-
           }
         }
         stage('Jacoco - Generate Coverage Report') {
