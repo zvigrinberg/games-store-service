@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ocp-tools-4/jenkins-agent-base-rhel8:v4.15.0
+FROM registry.redhat.io/ubi9
 
 ENV _BUILDAH_STARTED_IN_USERNS="" \
     BUILDAH_ISOLATION=chroot \
@@ -19,9 +19,6 @@ RUN adduser -g 0 -u 1001 jenkins && \
     chmod 775 /usr/share/man/man1 && \
     mkdir -p /var/lib/origin && \
     chmod 775 /var/lib/origin && \
-    chmod u-s /usr/bin/new[gu]idmap && \
-    setcap cap_setuid+eip /usr/bin/newuidmap && \
-    setcap cap_setgid+eip /usr/bin/newgidmap && \
     rm -f /var/logs/*
 
 USER 1001
