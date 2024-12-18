@@ -5,6 +5,7 @@ def final applicationName = "games-store-service"
 def gitRepo = 'https://github.com/zvigrinberg/games-store-service.git'
 def final mainBranch = "main"
 def final gitBranch
+def prNumber
 def tag
 def toBuildFullImage
 pipeline {
@@ -88,7 +89,7 @@ pipeline {
                         gitBranch = "${env.GIT_BRANCH}".replace("origin/","")
                         def final gitHubAccountOrganizationName = "zvigrinberg"
                         def final gitOpsRepoName="${JOB_NAME}".replace("-job", "")
-                        def prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${JENKINS_URL}job/${JOB_NAME}/${BUILD_NUMBER}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
+                        prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${JENKINS_URL}job/${JOB_NAME}/${BUILD_NUMBER}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
                         echo "Number of PR Created : "
                         echo "${prNumber}"
                         echo "PR URL:"
@@ -99,17 +100,30 @@ pipeline {
 
         }
 
-        stage('Wait for Code Review') {
+        stage('Wait for Code Review/Automatically Merge') {
             steps {
                 script {
                try {
                    input('Do you want to proceed to CD?')
                } catch (e) {
+
                    echo "exception intercepted, continue with pipeline, details : ${e}"
                    echo "waiting 2 minutes to review PR and Approve it"
+                   // this is only a demo, this value could be parameterized.
+                   // another option is to split the continuation of rest of this job to a new CD ( Cont Delivery) JOB in jenkins, that will be triggered by Approving+ Merging
+                   // the Opened PR, and this CI Job will be ended here.
                    sh 'sleep 120'
+
+                   withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
+                       gitBranch = "${env.GIT_BRANCH}".replace("origin/", "")
+                       def final gitHubAccountOrganizationName = "zvigrinberg"
+                       def final gitOpsRepoName = "${JOB_NAME}".replace("-job", "")
+                       def Result = sh(script: "curl -X PUT -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls/${prNumber}/merge -d '{\"commit_title\":\"Automatic CD approval and merging of PR\",\"commit_message\":\"Jenkins build URL: ${JENKINS_URL}job/${JOB_NAME}/${BUILD_NUMBER} \",\"head\":\"${gitBranch}\",\"base\":\"${mainBranch}\"}'", returnStdout: true).trim()
+                       echo "Automatically merged the PR"
+                       sh 'sleep 2'
+                  }
                  }
-                }
+               }
             }
         }
 
@@ -153,6 +167,7 @@ pipeline {
                           def deploymentYaml = readYaml file: 'deploy/deployment.yaml'
                           // Update image name to the new built image name
                           deploymentYaml.spec.template.spec.containers[0].image = "${toBuildFullImage}"
+                          sh 'rm deploy/deployment.yaml'
                           writeYaml charset: '', data: deploymentYaml, file: 'deploy/deployment.yaml'
                           def commitMessage = "build: prepare release ${tag}"
                           sh 'git add deploy/deployment.yaml'
