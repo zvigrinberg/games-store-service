@@ -4,6 +4,7 @@ def final registryAccount = "zgrinber"
 def final applicationName = "games-store-service"
 def gitRepo = 'https://github.com/zvigrinberg/games-store-service.git'
 def final mainBranch = "main"
+def final gitBranch
 def tag
 def toBuildFullImage
 pipeline {
@@ -60,8 +61,11 @@ pipeline {
             steps {
                 script {
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
+                        def maven = tool 'apache-maven'
+                        def mavenBinary = "$maven/bin/mvn"
                         sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
-                        sh 'mvn clean verify -Pits'
+                        sh 'sleep 10'
+                        sh "${mavenBinary} clean verify -Pits"
                         sh 'podman rm -f mongo'
                     }
                 }
@@ -73,8 +77,8 @@ pipeline {
                 withCredentials([string(credentialsId: 'gh-pat', variable: 'GH_TOKEN')]) {
                     script {
 
-//                        def final gitBranch = env.BRANCH_NAME
-                        def final gitBranch = "${env.BRANCH_NAME}"
+//                        def final gitBranch = ${BRANCH_NAME}
+                        gitBranch = env.BRANCH_NAME
                         def final gitHubAccountOrganizationName = "zvigrinberg"
                         def final gitOpsRepoName="${JOB_NAME}".replace("-job", "")
                         def prNumber = sh(script: "curl -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls -d '{\"title\": \"build: CI tests and scannings passed successfully for build number ${BUILD_NUMBER} \",\"body\": \"Before reviewing, please take a look on the CI job at: ${BUILD_URL}\",\"head\": \"${gitBranch}\",\"base\": \"${mainBranch}\"}' | jq .number ", returnStdout: true).trim()
