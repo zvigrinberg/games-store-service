@@ -29,9 +29,10 @@ pipeline {
           agent { label 'jenkins-agent-podman' }
           steps {
                 script{
-                    def podmanSocket = forwardDockerDaemonToPodmanSocket()
-                    withEnv(DOCKER_HOST=${podmanSocket}){
+                    withEnv(QUARKUS_MONGODB_DEVSERVICES_ENABLED=false){
+                        sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
                         sh "mvn clean test"
+                        sh 'podman rm -f mongo'
                     }
                 }
 
@@ -60,9 +61,10 @@ pipeline {
 
             steps {
                 script {
-                    def podmanSocket = forwardDockerDaemonToPodmanSocket()
-                    withEnv(DOCKER_HOST = $ { podmanSocket }) {
+                    withEnv(QUARKUS_MONGODB_DEVSERVICES_ENABLED=false){
+                        sh 'podman run --name mongo -d -p 27017:27017 docker.io/mongo:4.4'
                         sh 'mvn clean verify -Pits'
+                        sh 'podman rm -f mongo'
                     }
                 }
 
