@@ -122,7 +122,7 @@ pipeline {
 
         stage('Build JAR Artifact') {
             steps{
-                sh './mvnw package -DskipTests=true -Dquarkus.package.jar.type=uber-jar'
+                sh './mvnw package -DskipITs=true -DskipUTs=true -Dquarkus.package.jar.type=uber-jar'
                 stash includes: 'target/**', name: 'builtJar'
 
             }
