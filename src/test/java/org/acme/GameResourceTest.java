@@ -66,7 +66,6 @@ class GameResourceTest {
     }
 
     @Test
-    @TestTransaction
     @Order(5)
     void testGameEndpointCreate() {
         Response response = given()
@@ -94,7 +93,6 @@ class GameResourceTest {
     }
 
     @Test
-    @TestTransaction
     @Order(6)
     void testGameEndpointDelete() throws InterruptedException {
         Thread.sleep(2000);
