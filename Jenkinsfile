@@ -58,24 +58,18 @@ pipeline {
             agent { label 'jenkins-agent-podman' }
 
             steps {
-                script {
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
-                        try {
-                            def maven = tool 'apache-maven'
-                            def mavenBinary = "$maven/bin/mvn"
-                            sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
-                            sh 'sleep 15'
-                            sh "${mavenBinary} clean verify -Pits"
-                            sh 'podman rm -f mongo'
-                        } catch (e) {
-                            echo "Infrastructural error occured while ITs, continueing : ${e}"
-                        }
+                        sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
+                        sh 'sleep 15'
+                        sh "./mvnw clean verify -Pits"
+                        sh 'podman rm -f mongo'
+                        stash includes: 'target/**', name: 'jaCoCoReport'
                     }
-                }
             }
         }
         stage('Jacoco - Generate Coverage Report') {
             steps{
+                unstash 'jaCoCoReport'
                 recordCoverage(tools: [[parser: 'JACOCO']],
                         id: 'jacoco', name: 'JaCoCo Coverage',
                         sourceCodeRetention: 'EVERY_BUILD')
@@ -129,7 +123,7 @@ pipeline {
 
         stage('Build JAR Artifact') {
             steps{
-                sh 'mvn package -DskipTests=true -Dquarkus.package.jar.type=uber-jar'
+                sh './mvnw package -DskipTests=true -Dquarkus.package.jar.type=uber-jar'
                 stash includes: 'target/**', name: 'builtJar'
 
             }
