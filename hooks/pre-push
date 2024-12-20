@@ -15,8 +15,8 @@ echo remote_oid=$remote_oid >> /tmp/git-pre-push.txt
 BRANCH_PREFIX=$(echo $remote_ref | awk -F '/' '{print $3}')
 
 if [[ "$BRANCH_PREFIX" == "fix"  ||  "$BRANCH_PREFIX" == "hotfix"  ||  "$BRANCH_PREFIX" == "feature" ]]; then
-    (sleep 6 ; curl -X GET https://jenkins-jenkins.apps.cn-ai-lab.6aw6.p1.openshiftapps.com/job/games-store-service-job/build?token=my-secret-token -H 'Authorization: Bearer YOUR_TEMP_OPENSHIFT_TOKEN_GOES_HERE') &
-
+#    (sleep 6 ; curl -X GET https://jenkins-jenkins.apps.cn-ai-lab.6aw6.p1.openshiftapps.com/job/games-store-service-job/build?token=my-secret-token -H 'Authorization: Bearer YOUR_TEMP_OPENSHIFT_TOKEN_GOES_HERE') &
+      (sleep 6; xdg-open https://jenkins-jenkins.apps.cn-ai-lab.6aw6.p1.openshiftapps.com/job/games-store-service-job/build?token=my-secret-token) &
 fi  
 
 exit 0
