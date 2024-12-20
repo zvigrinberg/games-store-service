@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  mongodb-for-game-store
+  labels:
+    app: mongodb-for-game-store
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb-for-game-store
+  template:
+    metadata:
+      labels:
+        app: mongodb-for-game-store
+    spec:
+      containers:
+        - name: mongodb
+          image: mongodb/mongodb-community-server:8.0.3-ubi8
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: db
+              protocol: TCP
+              containerPort: 27017
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mongo-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  mongodb-for-game-store
+  labels:
+    app: mongodb-for-game-store
+spec:
+  ports:
+  - name: db
+    port: 27017
+    protocol: TCP
+    targetPort: 27017
+  selector:
+    app: mongodb-for-game-store
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi

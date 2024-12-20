@@ -26,3 +26,5 @@ spec:
           value: 'true'
         - name: QUARKUS_SWAGGER_UI_ENABLE
           value: 'true'
+        - name: QUARKUS_MONGODB_CONNECTION_STRING
+          value: mongodb://mongodb-for-game-store:27017

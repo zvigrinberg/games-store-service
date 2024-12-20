@@ -1,0 +1,92 @@
+name: CD ( Continuous deployment) workflow
+
+env:
+
+  OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
+  OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
+  OPENSHIFT_NAMESPACE: games-store
+  IMAGE_REGISTRY_USER: ${{ secrets.IMAGE_REGISTRY_USER }}
+  IMAGE_REGISTRY_PASSWORD: ${{ secrets.IMAGE_REGISTRY_PASSWORD }}
+  IMAGE_PULL_SECRET_NAME: games-store-service-ips
+
+
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy_to_openshift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Start CD Continuous Deployment Pipeline
+        shell: bash
+        run: |
+          export tag=$(git describe)
+          echo "About to deploy version $tag to environment"
+          echo "Get release metadata information from pushed tag:"
+          git tag $tag -n 3
+
+      - name: Install oc
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: 4.15.0
+
+      - name: Log In To OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Create namespace if doesn't exists
+        shell: bash
+        run: |
+          oc new-project ${{ env.OPENSHIFT_NAMESPACE }}
+          oc project ${{ env.OPENSHIFT_NAMESPACE }}
+        continue-on-error: true
+
+      - name: Create Image pull secret if doesn't exists
+        shell: bash
+        run: |
+          oc get secret ${{ env.IMAGE_PULL_SECRET_NAME}}  
+          if [[ $? -ne 0 ]]; then
+             oc create secret docker-registry ${{ env.IMAGE_PULL_SECRET_NAME}}  --docker-server=quay.io    --docker-username=${{ env.IMAGE_REGISTRY_USER}}  --docker-password=${{ env.IMAGE_REGISTRY_PASSWORD}}
+          fi
+
+# Without this, pod will not be able to pull the image from my private registry.
+      - name: Patch service account with pull secret
+        shell: bash
+        run: |
+          oc patch sa default --type='json' -p='[{"op": "add", "path": "/secrets/1", "value": {"name": "${{ env.IMAGE_PULL_SECRET_NAME}}" } }]'
+          oc secrets link default ${{ env.IMAGE_PULL_SECRET_NAME}} --for=pull          
+          
+
+      - name: Deploy to cluster from manifests
+        shell: bash
+        run: oc apply -f deploy/
+
+
+      - name: Extract full Server Route name for Swagger-UI
+        id: swagger
+        shell: bash
+        run: |
+          echo "url=https://$(oc get route -o=jsonpath='{.items[].spec.host}')" >> "$GITHUB_OUTPUT
+#  Setup dynamically the service route as server for swagger-ui, in order to be able to run all endpoints automatically from swagger-ui.
+      - name: Setup the service route for swagger-ui
+        env:
+          OPENAPI_ROUTE: ${{ steps.swagger.outputs.url }}
+        shell: bash
+        run: |
+          oc set env deployment -l app=games-store-service QUARKUS_SMALLRYE_OPENAPI_SERVERS=${{ env.OPENAPI_ROUTE }}
+          
+
+      - name: Completed CD pipeline
+        shell: bash
+        run: |
+          echo "Successfully deployed tag version to  environment openshift cluster!"

@@ -68,7 +68,7 @@ pipeline {
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
                         sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
                         sh 'sleep 15'
-                        sh "./mvnw clean verify -Pits"
+                        sh "./mvnw clean verify -B -Pits"
                         sh 'podman rm -f mongo'
                     }
             }
