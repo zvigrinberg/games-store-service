@@ -16,17 +16,13 @@ spec:
         app: games-store-service
     spec:
       containers:
-      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-112
+      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-116
         name: games-store-service
         ports:
         - containerPort: 8080
           name: http
         env:
         - name: QUARKUS_SWAGGER_UI_ALWAYS_INCLUDE
-          value: "true"
+          value: 'true'
         - name: QUARKUS_SWAGGER_UI_ENABLE
-          value: "true"
-# Will be calculated
-#        - name: QUARKUS_SMALLRYE_OPENAPI_SERVERS
-#          value: "http://games-store-service-games-store-service.apps.cn-ai-lab.6aw6.p1.openshiftapps.com/q/openapi"
-
+          value: 'true'
