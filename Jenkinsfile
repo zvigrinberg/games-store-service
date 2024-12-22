@@ -156,6 +156,8 @@ pipeline {
                           def deploymentYaml = readYaml file: 'deploy/deployment.yaml'
                           // Update image name to the new built image name
                           deploymentYaml.spec.template.spec.containers[0].image = "${toBuildFullImage}"
+                          deploymentYaml.metadata.labels.version = "${tag}"
+                          deploymentYaml.spec.template.metadata.labels.version = "${tag}"
                           sh 'rm deploy/deployment.yaml'
                           writeYaml charset: '', data: deploymentYaml, file: 'deploy/deployment.yaml'
                           def commitMessage = "build: prepare release ${tag}"

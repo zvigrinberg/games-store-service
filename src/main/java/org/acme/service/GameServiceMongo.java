@@ -1,5 +1,6 @@
 package org.acme.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
@@ -10,6 +11,7 @@ import org.acme.mapper.ModelDtoMapper;
 import org.acme.model.Game;
 import org.acme.dto.GameDto;
 import org.acme.repository.GameRepository;
+import org.jboss.logging.Logger;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +23,7 @@ public class GameServiceMongo implements GameService {
 
     @Inject
     private GameRepository gameRepository;
-
+    private static final Logger LOG = Logger.getLogger(GameServiceMongo.class);
 
     @Override
     public GameDto getOneById(Integer id) {
@@ -109,5 +111,13 @@ public class GameServiceMongo implements GameService {
         if (Objects.isNull(name) || name.trim() == "") {
             throw new BadRequestException("game name must be populated");
         }
+    }
+    @PostConstruct
+    public void startUp() {
+        LOG.infof("Welcome! , games-store-service API started!!, Service API build version=%s", getBuildVersion());
+    }
+
+    private static String getBuildVersion() {
+        return System.getenv("BUILD_VERSION") == null ? "" : System.getenv("BUILD_VERSION");
     }
 }
