@@ -2,7 +2,7 @@ name: CD ( Continuous deployment) workflow
 
 env:
 
-  OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
+  OPENSHIFT_SERVER: ${{ vars.OPENSHIFT_SERVER }}
   OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
   OPENSHIFT_NAMESPACE: games-store
   IMAGE_REGISTRY_USER: ${{ secrets.IMAGE_REGISTRY_USER }}
@@ -18,10 +18,12 @@ on:
 
 jobs:
   deploy_to_openshift:
+    environment: staging
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        fetch-depth: 0
 
       - name: Start CD Continuous Deployment Pipeline
         shell: bash
