@@ -53,8 +53,6 @@ pipeline {
                         def maven = tool 'apache-maven'
                         def mavenBinary = "$maven/bin/mvn"
                         invokeRhdaAnalysis("pom.xml", "",mavenBinary)
-
-
                 }
 
             }
