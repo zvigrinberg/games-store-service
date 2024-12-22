@@ -63,7 +63,7 @@ jobs:
           oc get secret ${{ env.IMAGE_PULL_SECRET_NAME}}  
 
       - name: Create Image pull secret if doesn't exists
-        if: ${{ steps.ipsExists.conclusion == 'failure' }}
+        if: ${{ failure() && steps.ipsExists.conclusion == 'failure' }}
         shell: bash
         run: |
           oc create secret docker-registry ${{ env.IMAGE_PULL_SECRET_NAME}}  --docker-server=quay.io    --docker-username=${{ env.IMAGE_REGISTRY_USER}}  --docker-password=${{ env.IMAGE_REGISTRY_PASSWORD}}  
