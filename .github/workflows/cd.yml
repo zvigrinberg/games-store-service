@@ -83,10 +83,10 @@ jobs:
           OPENAPI_ROUTE: ${{ steps.swagger.outputs.url }}
         shell: bash
         run: |
-          oc set env deployment -l app=games-store-service QUARKUS_SMALLRYE_OPENAPI_SERVERS=${{ env.OPENAPI_ROUTE }}
+          oc set env deployment -l app=games-store-service QUARKUS_SMALLRYE_OPENAPI_SERVERS=https://${{ env.OPENAPI_ROUTE }}
           
 
       - name: Completed CD pipeline
         shell: bash
         run: |
-          echo "Successfully deployed tag version to  environment openshift cluster!"
+          echo "Successfully deployed tag version V${{ github.ref_name }} to openshift cluster ${{ env.OPENSHIFT_SERVER }}!"
