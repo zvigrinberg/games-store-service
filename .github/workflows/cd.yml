@@ -94,7 +94,7 @@ jobs:
           OPENAPI_ROUTE: ${{ steps.swagger.outputs.url }}
         shell: bash
         run: |
-          oc set env deployment -l app=games-store-service QUARKUS_SMALLRYE_OPENAPI_SERVERS=https://${{ env.OPENAPI_ROUTE }}
+          oc set env deployment -l app=games-store-service QUARKUS_SMALLRYE_OPENAPI_SERVERS=${{ env.OPENAPI_ROUTE }}
           
 
       - name: Completed CD pipeline
