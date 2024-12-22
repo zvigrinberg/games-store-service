@@ -55,15 +55,19 @@ jobs:
           oc project ${{ env.OPENSHIFT_NAMESPACE }}
         continue-on-error: true
 
-      - name: Create Image pull secret if doesn't exists
+      - name: Check if Image pull secret exists
         continue-on-error: true
+        id: ipsExists
         shell: bash
         run: |
-          oc get secret ${{ env.IMAGE_PULL_SECRET_NAME}} || true  
-          if [[ $? -ne 0 ]]; then
-             oc create secret docker-registry ${{ env.IMAGE_PULL_SECRET_NAME}}  --docker-server=quay.io    --docker-username=${{ env.IMAGE_REGISTRY_USER}}  --docker-password=${{ env.IMAGE_REGISTRY_PASSWORD}}
-          fi
+          oc get secret ${{ env.IMAGE_PULL_SECRET_NAME}}  
 
+      - name: Create Image pull secret if doesn't exists
+        if: ${{ steps.ipsExists.conclusion == 'failure' }}
+        shell: bash
+        run: |
+          oc create secret docker-registry ${{ env.IMAGE_PULL_SECRET_NAME}}  --docker-server=quay.io    --docker-username=${{ env.IMAGE_REGISTRY_USER}}  --docker-password=${{ env.IMAGE_REGISTRY_PASSWORD}}  
+          
 # Without this, pod will not be able to pull the image from my private registry.
       - name: Patch service account with pull secret
         shell: bash
