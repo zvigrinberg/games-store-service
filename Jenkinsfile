@@ -200,7 +200,7 @@ private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir,Str
     }
     try {
         def result
-        withEnv(['EXHORT_DEBUG=true', "EXHORT_MVN_PATH=${mavenBinary}"]) {
+        withEnv(['EXHORT_DEBUG=true', "EXHORT_MVN_PATH=${mavenBinary}, HIGHEST_ALLOWED_VULN_SEVERITY=LOW"]) {
             result = rhdaAnalysis consentTelemetry: true, file: theFile
         }
         if (result.trim().equals(VULNERABLE_RETURN_CODE)) {

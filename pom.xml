@@ -81,6 +81,13 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client-jackson</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.keycloak/keycloak-quarkus-server-app -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-quarkus-server-app</artifactId>
+            <version>26.0.5</version>
+        </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
