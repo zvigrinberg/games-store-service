@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: games-store-service
-    version: 1.0.0-SNAPSHOT-128
+    version: 1.0.0-SNAPSHOT-129
   name: games-store-service
 spec:
   replicas: 1
@@ -16,10 +16,10 @@ spec:
     metadata:
       labels:
         app: games-store-service
-        version: 1.0.0-SNAPSHOT-128
+        version: 1.0.0-SNAPSHOT-129
     spec:
       containers:
-      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-128
+      - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-129
         name: games-store-service
         ports:
         - containerPort: 8080
