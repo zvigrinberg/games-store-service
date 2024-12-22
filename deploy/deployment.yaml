@@ -3,17 +3,20 @@ kind: Deployment
 metadata:
   labels:
     app: games-store-service
+    version: 1.0.0-SNAPSHOT-127
   name: games-store-service
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: games-store-service
-  strategy: {}
+  strategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
         app: games-store-service
+        version: 1.0.0-SNAPSHOT-127
     spec:
       containers:
       - image: quay.io/zgrinber/games-store-service:1.0.0-SNAPSHOT-127
@@ -28,3 +31,8 @@ spec:
           value: 'true'
         - name: QUARKUS_MONGODB_CONNECTION_STRING
           value: mongodb://mongodb-for-game-store:27017
+        - name: BUILD_VERSION
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.labels['version']
