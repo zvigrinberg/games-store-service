@@ -5,6 +5,7 @@ import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.acme.mapper.ModelDtoMapper;
@@ -16,9 +17,11 @@ import org.jboss.logging.Logger;
 import java.util.List;
 import java.util.Objects;
 
+import static config.AppStartupLifecycleHook.getBuildVersion;
+
 @Alternative
 @Priority(1)
-@ApplicationScoped
+@Singleton
 public class GameServiceMongo implements GameService {
 
     @Inject
@@ -114,10 +117,8 @@ public class GameServiceMongo implements GameService {
     }
     @PostConstruct
     public void startUp() {
-        LOG.infof("Welcome! , games-store-service API started!!, Service API build version=%s", getBuildVersion());
+        LOG.infof("Welcome! , games-store MongoDB Service started!!, Service API build version=%s", getBuildVersion());
     }
 
-    private static String getBuildVersion() {
-        return System.getenv("BUILD_VERSION") == null ? "" : System.getenv("BUILD_VERSION");
-    }
+
 }

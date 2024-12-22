@@ -1,6 +1,7 @@
 package org.acme.rest;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.*;
@@ -23,6 +24,7 @@ import org.jboss.resteasy.reactive.RestQuery;
 import java.util.List;
 
 @Path("/v1/game")
+@Singleton
 public class GameResource {
 
     @Inject

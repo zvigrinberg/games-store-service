@@ -63,7 +63,6 @@ pipeline {
             steps {
                     withEnv(['QUARKUS_MONGODB_DEVSERVICES_ENABLED=false']){
                         sh 'podman run --name mongo -d -p 27017:27017 docker.io/library/mongo:7.0'
-                        sh 'sleep 15'
                         sh "./mvnw clean verify -B -Pits"
                         sh 'podman rm -f mongo'
                     }
@@ -109,7 +108,7 @@ pipeline {
                        def final gitOpsRepoName = "${JOB_NAME}".replace("-job", "")
                        def Result = sh(script: "curl -X PUT -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" https://api.github.com/repos/${gitHubAccountOrganizationName}/${gitOpsRepoName}/pulls/${prNumber}/merge -d '{\"commit_title\":\"Automatic CD approval and merging of PR\",\"commit_message\":\"Jenkins build URL: ${JENKINS_URL}job/${JOB_NAME}/${BUILD_NUMBER} \",\"head\":\"${gitBranch}\",\"base\":\"${mainBranch}\"}'", returnStdout: true).trim()
                        echo "Automatically merged the PR"
-                       sh 'sleep 2'
+                       sh 'sleep 1'
                   }
                  }
                }
