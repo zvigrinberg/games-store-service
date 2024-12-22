@@ -59,7 +59,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          oc get secret ${{ env.IMAGE_PULL_SECRET_NAME}}  
+          oc get secret ${{ env.IMAGE_PULL_SECRET_NAME}} || true  
           if [[ $? -ne 0 ]]; then
              oc create secret docker-registry ${{ env.IMAGE_PULL_SECRET_NAME}}  --docker-server=quay.io    --docker-username=${{ env.IMAGE_REGISTRY_USER}}  --docker-password=${{ env.IMAGE_REGISTRY_PASSWORD}}
           fi
