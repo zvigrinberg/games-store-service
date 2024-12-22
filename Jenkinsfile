@@ -49,13 +49,11 @@ pipeline {
         stage('RHDA - Security Scanner Analysis ') {
             steps {
                 script {
-                    try {
+
                         def maven = tool 'apache-maven'
                         def mavenBinary = "$maven/bin/mvn"
                         invokeRhdaAnalysis("pom.xml", "",mavenBinary)
-                    } catch (e) {
-                        echo "error in RHDA step - ${e}"
-                    }
+
 
                 }
 
@@ -205,6 +203,8 @@ private void invokeRhdaAnalysis(String manifestName,String pathToManifestDir,Str
         }
         if (result.trim().equals(VULNERABLE_RETURN_CODE)) {
             unstable(message: "There are some vulnerabilities in Manifest, please take a look at the report , and upgrade according to it")
+            error(message: "There are some vulnerabilities in Manifest, please take a look at the report , and upgrade according to it")
+
         }
         else {
             if(result.trim().equals(GENERAL_ERROR_RETURN_CODE)) {
