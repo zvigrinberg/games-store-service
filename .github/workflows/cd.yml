@@ -86,7 +86,7 @@ jobs:
         shell: bash
         run: |
           export route=$(oc get route -o=jsonpath='{.items[].spec.host}')
-          echo "url=https://$route" >> "$GITHUB_OUTPUT
+          echo "url=https://$route" >> $GITHUB_OUTPUT
 
 #  Setup dynamically the service route as server for swagger-ui, in order to be able to run all endpoints automatically from swagger-ui.
       - name: Setup the service route for swagger-ui
