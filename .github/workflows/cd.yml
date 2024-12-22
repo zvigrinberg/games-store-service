@@ -85,7 +85,9 @@ jobs:
         id: swagger
         shell: bash
         run: |
-          echo "url=https://$(oc get route -o=jsonpath='{.items[].spec.host}')" >> "$GITHUB_OUTPUT
+          export route=$(oc get route -o=jsonpath='{.items[].spec.host}')
+          echo "url=https://$route" >> "$GITHUB_OUTPUT
+
 #  Setup dynamically the service route as server for swagger-ui, in order to be able to run all endpoints automatically from swagger-ui.
       - name: Setup the service route for swagger-ui
         env:
@@ -98,4 +100,4 @@ jobs:
       - name: Completed CD pipeline
         shell: bash
         run: |
-          echo "Successfully deployed tag version V${{ github.ref_name }} to openshift cluster ${{ env.OPENSHIFT_SERVER }}!"
+          echo "Successfully deployed tag version V${{ github.ref_name }} to openshift cluster=> ${{ env.OPENSHIFT_SERVER }}!"
