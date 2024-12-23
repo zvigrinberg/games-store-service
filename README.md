@@ -35,6 +35,16 @@ If you want to build an _über-jar_, execute the following command:
 
 The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
 
+## CI/CD Procedure Demo
+
+### CI + CD ( Continuous Delivery)
+ - Tested and Performed on Jenkins Automation server Instance deployed on an openshift cluster.
+ - The CI/CD Pipeline itself defined in Jenkinsfile located [here](./Jenkinsfile)
+
+### CD (Continuous Deployment)
+- Tested Performed with github actions , the workflow yaml definition is [here](.github/workflows/cd.yml)
+- The target openshift cluster is the same cluster where jenkins is deployed.  
+
 ## Creating a native executable
 
 You can create a native executable using:
