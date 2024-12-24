@@ -40,9 +40,11 @@ The application, packaged as an _über-jar_, is now runnable using `java -jar ta
 ### CI + CD ( Continuous Delivery)
  - Tested and Performed on Jenkins Automation server Instance deployed on an openshift cluster.
  - Part of the stages using 'jenkins-agent-podman' , a container image agent with podman binary,
-   Dockerfile that agent image was built from is [here](./agent/Dockerfile) 
- - The CI/CD Pipeline itself defined in Jenkinsfile located [here](./Jenkinsfile)
- - Curated Plugins needed to be installed in jenkins in order to run the pipeline ( few of them pre installed by default:
+   Dockerfile that agent image was built from is [here](./agent/Dockerfile)
+ - Every pushed change triggers the pipeline run using github `pre-push` hook that takes places
+   just before the push of new content to remote repo, you can see the hook script [here](./hooks/pre-push) - in order to work, need to place it in root of local repository in relative path `.git/hooks/pre-push`
+ - The CI/CD Pipeline itself defined in `Jenkinsfile` located [here](./Jenkinsfile)
+ - Curated Plugins needed to be installed in jenkins in order to run the pipeline ( few of them pre-installed by default:
    1. [Pipeline: Declarative Plugin](https://plugins.jenkins.io/pipeline-model-definition/)
    2. [Workspace Cleanup Plugin](https://plugins.jenkins.io/ws-cleanup/)
    3. [Pipeline Utility Steps Plugin](https://plugins.jenkins.io/pipeline-utility-steps/)

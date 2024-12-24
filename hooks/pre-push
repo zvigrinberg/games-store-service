@@ -1,16 +1,14 @@
 remote="$1"
 url="$2"
 
-
 read local_ref local_oid remote_ref remote_oid
 
-echo remote=$remote >> /tmp/git-pre-push.txt
-echo url=$url >> /tmp/git-pre-push.txt
-echo local_ref=$local_ref >> /tmp/git-pre-push.txt
-echo local_oid=$local_oid >> /tmp/git-pre-push.txt
-echo remote_ref=$remote_ref >> /tmp/git-pre-push.txt
-echo remote_oid=$remote_oid >> /tmp/git-pre-push.txt
-
+#echo remote=$remote >> /tmp/git-pre-push.txt
+#echo url=$url >> /tmp/git-pre-push.txt
+#echo local_ref=$local_ref >> /tmp/git-pre-push.txt
+#echo local_oid=$local_oid >> /tmp/git-pre-push.txt
+#echo remote_ref=$remote_ref >> /tmp/git-pre-push.txt
+#echo remote_oid=$remote_oid >> /tmp/git-pre-push.txt
 
 BRANCH_PREFIX=$(echo $remote_ref | awk -F '/' '{print $3}')
 
