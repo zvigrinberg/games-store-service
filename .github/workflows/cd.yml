@@ -10,7 +10,7 @@ env:
   IMAGE_PULL_SECRET_NAME: games-store-service-ips
 
 
-
+# This CD ( Continuous deployment) Workflow will be triggered only for pushed release tags ( created by CI/CD -  Continuous Integration + delivery pipeline)
 on:
   push:
     tags:
@@ -68,7 +68,7 @@ jobs:
         run: |
           oc create secret docker-registry ${{ env.IMAGE_PULL_SECRET_NAME}}  --docker-server=quay.io    --docker-username=${{ env.IMAGE_REGISTRY_USER}}  --docker-password=${{ env.IMAGE_REGISTRY_PASSWORD}}  
           
-# Without this, pod will not be able to pull the image from my private registry.
+# Without this, pod will not be able to pull the image from private registry.
       - name: Patch service account with pull secret
         shell: bash
         run: |
@@ -100,4 +100,4 @@ jobs:
       - name: Completed CD pipeline
         shell: bash
         run: |
-          echo "Successfully deployed tag version V${{ github.ref_name }} to openshift cluster=> ${{ env.OPENSHIFT_SERVER }}!"
+          echo "Successfully deployed version V${{ github.ref_name }} of games-store-service microservice to openshift cluster=> ${{ env.OPENSHIFT_SERVER }}!"
